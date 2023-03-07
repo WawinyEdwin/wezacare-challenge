@@ -4,6 +4,11 @@ from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 
 
+def get_the_token_from_header(token):
+    token = token.replace("Bearer", "").replace(" ", "")  # clean the token
+    return token
+
+
 def verify_user(authorization):
     """
     Verify a JWT token 
@@ -21,12 +26,13 @@ def verify_user(authorization):
 
     # Decode the JWT and verify its signature
     try:
-        payload = jwt.decode(authorization, settings.SECRET_KEY, algorithms=["HS256"])
+        token = get_the_token_from_header(authorization)
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
     except jwt.exceptions.InvalidSignatureError:
         raise AuthenticationFailed("Invalid signature")
     except:
         raise ParseError()
-    
+
     # return the token payload
     return payload
 
@@ -41,16 +47,20 @@ def sign_token(user):
     Returns:
         jwt_token (str): encoded jwt token
     """
-    
+
     # Create the JWT payload
     payload = {
-            'user_id': user.id,
-            'exp': int((datetime.now() + timedelta(hours=settings.JWT_CONF['TOKEN_LIFETIME_HOURS'])).timestamp()),
-            'iat': datetime.now().timestamp(),
+        "user_id": user.id,
+        "exp": int(
+            (
+                datetime.now()
+                + timedelta(hours=settings.JWT_CONF["TOKEN_LIFETIME_HOURS"])
+            ).timestamp()
+        ),
+        "iat": datetime.now().timestamp(),
     }
 
     # Encode the JWT with your secret key
-    jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm='HS256')
+    jwt_token = jwt.encode(payload, settings.SECRET_KEY, algorithm="HS256")
 
     return jwt_token
-

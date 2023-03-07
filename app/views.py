@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from rest_framework.decorators import api_view
+from .serializers import QuestionSerializer, UserSerializer, AnswerSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from .auth import verify_user, sign_token
@@ -12,19 +13,14 @@ def register_user(request):
     """
     Grabs user registration info and stores it
     """
-    if not request.data:
-        return Response(
-            {"message": "All fields required"}, status=status.HTTP_400_BAD_REQUEST
-        )
+    data = {"email": request.data["email"], "password": request.data["password"]}
 
-    email = request.data["email"]
-    password = request.data["password"]
-    user = User(
-        email=email,
-        password=make_password(password),
-    )
-    user.save()
-    return Response({"message": "Account Created"}, status=status.HTTP_201_CREATED)
+    serializer = UserSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "account created"}, status=status.HTTP_201_CREATED)
+
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["POST"])
@@ -34,14 +30,14 @@ def login_user(request):
     """
     email = request.data["email"]
     password = request.data["password"]
-    user = User.objects.get(email=email)
+    user = User.objects.filter(email=email).first()
     if user is None:
         return Response(
             {"message": "This User Does Not Exist"}, status=status.HTTP_401_UNAUTHORIZED
         )
 
     if check_password(password, user.password):
-        return Response(sign_token(user), status=status.HTTP_200_OK)
+        return Response({"token": sign_token(user)}, status=status.HTTP_200_OK)
     return Response(
         {"message": "Incorrect Password"}, status=status.HTTP_401_UNAUTHORIZED
     )
@@ -57,8 +53,9 @@ def questions(request):
         Posts a question.
     """
     if request.method == "GET":
-        questions = Question.get_questions()
-        return Response(questions, status=status.HTTP_200_OK)
+        questions = Question.objects.all()
+        serializer = QuestionSerializer(questions, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
     if request.method == "POST":
         auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
@@ -70,14 +67,15 @@ def questions(request):
                 {"message": "All fields required"}, status=status.HTTP_400_BAD_REQUEST
             )
 
-        question_text = request.data["question"]
-        question = Question(
-            question_text=question_text,
-            author=auth.id,
-        )
-        question.save()
-
-        return Response({"message": "Question Posted"}, status=status.HTTP_201_CREATED)
+        author = User.objects.get(pk=auth["user_id"])
+        data = {"question_text": request.data["question"], "author": author}
+        serializer = QuestionSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(
+                {"message": "Question Posted"}, status=status.HTTP_201_CREATED
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["GET", "DELETE"])
@@ -92,22 +90,33 @@ def question_detail(request, question_id):
     Args:
        question_id (int): question unique id
     """
+
+    try:
+        question = Question.objects.get(pk=question_id)
+        answers = question.answers.all()
+        print(answers)
+    except Question.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
     if request.method == "GET":
-        question = Question.get_single_question(question_id)
-        return Response(question, status=status.HTTP_200_OK)
+        serializer = QuestionSerializer(question)
+        answer_serializer = AnswerSerializer(answers, many=True)
+        return Response(
+            {"question": serializer.data, "answers": answer_serializer.data},
+            status=status.HTTP_200_OK,
+        )
 
     if request.method == "DELETE":
         auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
         if auth is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        question = Question.objects.get(pk=question_id)
-        if question.author != auth.id:
+        if question.author != auth["user_id"]:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         # delete the question
         question.delete()
-        return Response(question, status=status.HTTP_200_OK)
+        return Response(question, status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
@@ -122,16 +131,16 @@ def answers(request, question_id):
     if auth is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    if not request.data:
-        return Response(
-            {"message": "All fields required"}, status=status.HTTP_400_BAD_REQUEST
-        )
-
-    answer_text = request.data["answer"]
-    answer = Answer(answer_text=answer_text, author=auth.id, question=question_id)
-    answer.save()
-
-    return Response({"message": "Posted an answer"}, status=status.HTTP_201_CREATED)
+    data = {
+        "answer_text": request.data["answer"],
+        "question": question_id,
+        "author": auth["user_id"],
+    }
+    serializer = AnswerSerializer(data=data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response({"message": "Answer Posted"}, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(["PUT", "DELETE"])
@@ -151,19 +160,25 @@ def answer_detail(request, question_id, answer_id):
     if auth is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-    ans = Answer.objects.get(pk=answer_id)
-    if ans.author != auth.id:
+    try:
+        ans = Answer.objects.get(pk=answer_id)
+    except:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    if ans.author != auth["user_id"]:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "PUT":
-        answer_update = request.data["answer"]
-        answer = Answer(answer_text=answer_update)
-        answer.save()
-        return Response(status=status.HTTP_200_OK)
+        serializer = AnswerSerializer(ans, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     if request.method == "DELETE":
         ans.delete()
-        return Response(status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["GET"])
