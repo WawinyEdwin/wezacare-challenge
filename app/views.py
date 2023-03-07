@@ -62,13 +62,8 @@ def questions(request):
         if auth is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        if not request.data:
-            return Response(
-                {"message": "All fields required"}, status=status.HTTP_400_BAD_REQUEST
-            )
-
-        author = User.objects.get(pk=auth["user_id"])
-        data = {"question_text": request.data["question"], "author": author}
+        author = User.objects.get(pk=auth.get("user_id"))
+        data = {"question_text": request.data["question_text"], "author": author.pk}
         serializer = QuestionSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
@@ -94,7 +89,6 @@ def question_detail(request, question_id):
     try:
         question = Question.objects.get(pk=question_id)
         answers = question.answers.all()
-        print(answers)
     except Question.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
@@ -107,16 +101,17 @@ def question_detail(request, question_id):
         )
 
     if request.method == "DELETE":
+        serializer = QuestionSerializer(question)
         auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
         if auth is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
-        if question.author != auth["user_id"]:
+        if serializer.data["author"] != auth["user_id"]:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
 
         # delete the question
         question.delete()
-        return Response(question, status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(["POST"])
@@ -132,9 +127,9 @@ def answers(request, question_id):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     data = {
-        "answer_text": request.data["answer"],
+        "answer_text": request.data["answer_text"],
         "question": question_id,
-        "author": auth["user_id"],
+        "author": auth.get("user_id"),
     }
     serializer = AnswerSerializer(data=data)
     if serializer.is_valid():
@@ -165,7 +160,8 @@ def answer_detail(request, question_id, answer_id):
     except:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
-    if ans.author != auth["user_id"]:
+    serializer = AnswerSerializer(ans)
+    if serializer.data["author"] != auth["user_id"]:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "PUT":

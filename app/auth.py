@@ -11,7 +11,7 @@ def get_the_token_from_header(token):
 
 def verify_user(authorization):
     """
-    Verify a JWT token 
+    Verify a JWT token
 
     Args:
         authorization (str): An authorization header sent in request.
@@ -47,10 +47,10 @@ def sign_token(user):
     Returns:
         jwt_token (str): encoded jwt token
     """
-
     # Create the JWT payload
     payload = {
         "user_id": user.id,
+        "user_email": user.email,
         "exp": int(
             (
                 datetime.now()
