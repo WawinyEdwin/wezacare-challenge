@@ -37,7 +37,7 @@ This backend service exposes its functionality to frontend clients via API endpo
 ### API Endpoints
 
 | HTTP Verbs | Endpoints                                     | Action                                      |
-| ---------- | --------------------------------------------- | ------------------------------------------- |
+|------------|-----------------------------------------------|---------------------------------------------|
 | POST       | /auth/login/                                  | To authenticates a user                     |
 | POST       | /auth/register/                               | To create an account for a user             |
 | GET        | /questions/                                   | To retrieve all questions                   |
@@ -52,7 +52,8 @@ This backend service exposes its functionality to frontend clients via API endpo
 
 ### API Documentation
 
-Find the API documentation here [Kevin-Service Documentation](https://documenter.getpostman.com/view/17474568/2s93JqSR4c)
+Find the API documentation
+here [Kevin-Service Documentation](https://documenter.getpostman.com/view/17474568/2s93JqSR4c)
 
 ### Technologies Used
 
@@ -62,4 +63,5 @@ Find the API documentation here [Kevin-Service Documentation](https://documenter
   clean, pragmatic design.
 - [Django Rest Framework](https://www.django-rest-framework.org/) Django REST framework is a powerful and flexible
   toolkit for building Web APIs.
-- [SQLite](https://www.sqlite.org/) SQLite is an in-process library that implements a self-contained, serverless, zero-configuration, transactional SQL database engine
+- [SQLite](https://www.sqlite.org/) SQLite is an in-process library that implements a self-contained, serverless,
+  zero-configuration, transactional SQL database engine
