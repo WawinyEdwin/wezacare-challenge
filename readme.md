@@ -2,7 +2,7 @@
 
 ### Introduction
 
-This backend service serves frontend clients.
+This backend service exposes its functionality to frontend clients via API endpoints below.
 
 ### Kevin's Service Features
 
@@ -14,14 +14,21 @@ This backend service serves frontend clients.
 
 ### Installation Guide
 
-- Clone this repository [here](https://github.com/LL04-Finance-Dowell/100018-dowellWorkflowAi-testing.git).
+- Clone this repository [here](https://github.com/WawinyEdwin/wezacare-challenge.git).
 - The `main` branch is the most stable branch at any given time, ensure you're working from it.
 - Run `pip install -r requirements.txt` to install dependencies.
+- Once the packages are installed preferably on a virtual env
+- Run `python manage.py migrate` to migrate the database tables.
+
+### Testing
+
+- To run tests on this application.
+- Run `python manage.py test`
 
 ### Usage
 
 - Run `python manage.py runserver 8001` to start the application.
-- Connect to the API using Postman on port 8001.
+- Connect to the API using Postman or web client on port 8001.
 
 ### API Authorization
 
@@ -43,10 +50,9 @@ This backend service serves frontend clients.
 
 ---
 
-### API Documentation 
+### API Documentation
 
-[Kevin-Service](https://documenter.getpostman.com/view/17474568/2s93JqSR4c)
-
+Find the API documentation here [Kevin-Service Documentation](https://documenter.getpostman.com/view/17474568/2s93JqSR4c)
 
 ### Technologies Used
 
