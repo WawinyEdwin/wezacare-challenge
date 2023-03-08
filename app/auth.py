@@ -28,7 +28,7 @@ def verify_user(authorization):
             token,
             settings.SECRET_KEY,
             algorithms="HS256",
-            options={"verify_signature": True},
+            options={"verify_signature": False},
         )
     except:
         print("Invalid")
