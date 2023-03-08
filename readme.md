@@ -25,8 +25,7 @@ This backend service serves frontend clients.
 
 ### API Authorization
 
-- Bearer Token <token>
-
+- Authorization `Bearer Token`
 
 ### API Endpoints
 
@@ -44,6 +43,11 @@ This backend service serves frontend clients.
 
 ---
 
+### API Documentation 
+
+[Kevin-Service](https://documenter.getpostman.com/view/17474568/2s93JqSR4c)
+
+
 ### Technologies Used
 
 - [Python](https://nodejs.org/) is a programming language that lets you work more quickly and integrate your systems
@@ -52,5 +56,4 @@ This backend service serves frontend clients.
   clean, pragmatic design.
 - [Django Rest Framework](https://www.django-rest-framework.org/) Django REST framework is a powerful and flexible
   toolkit for building Web APIs.
-- [SQLite](https://www.mongodb.com/) is a free open source NOSQL document database with scalability and flexibility.
-  Data are stored in flexible JSON-like documents.
+- [SQLite](https://www.sqlite.org/) SQLite is an in-process library that implements a self-contained, serverless, zero-configuration, transactional SQL database engine
