@@ -13,7 +13,10 @@ def register_user(request):
     """
     Grabs user registration info and stores it
     """
-    data = {"email": request.data["email"], "password": request.data["password"]}
+    data = {
+        "email": request.data["email"],
+        "password": make_password(request.data["password"]),
+    }
 
     serializer = UserSerializer(data=data)
     if serializer.is_valid():
@@ -26,7 +29,7 @@ def register_user(request):
 @api_view(["POST"])
 def login_user(request):
     """
-    Grab user login info and authenticate them.
+    Grabs user login info and authenticate them.
     """
     email = request.data["email"]
     password = request.data["password"]
@@ -61,15 +64,20 @@ def questions(request):
         auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
         if auth is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-
-        author = User.objects.get(pk=auth.get("user_id"))
-        data = {"question_text": request.data["question_text"], "author": author.pk}
+        
+        data = {
+            "question_text": request.data.get("question_text"),
+            "author": auth.get("user_id"),
+            "author_email": auth.get("user_email"),
+        }
         serializer = QuestionSerializer(data=data)
+
         if serializer.is_valid():
             serializer.save()
             return Response(
                 {"message": "Question Posted"}, status=status.HTTP_201_CREATED
             )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -127,9 +135,10 @@ def answers(request, question_id):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     data = {
-        "answer_text": request.data["answer_text"],
+        "answer_text": request.data.get("answer_text"),
         "question": question_id,
         "author": auth.get("user_id"),
+        "author_email": auth.get("user_email"),
     }
     serializer = AnswerSerializer(data=data)
     if serializer.is_valid():
@@ -151,7 +160,8 @@ def answer_detail(request, question_id, answer_id):
         question_id (int): question unique id
         answer_id (int): answer unique id
     """
-    auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
+    auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION", None))
+
     if auth is None:
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
@@ -161,7 +171,7 @@ def answer_detail(request, question_id, answer_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     serializer = AnswerSerializer(ans)
-    if serializer.data["author"] != auth["user_id"]:
+    if serializer.data["author"] != auth.get("user_id"):
         return Response(status=status.HTTP_401_UNAUTHORIZED)
 
     if request.method == "PUT":

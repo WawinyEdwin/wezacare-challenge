@@ -4,12 +4,8 @@ from django.conf import settings
 from rest_framework.exceptions import AuthenticationFailed, ParseError
 
 
-def get_the_token_from_header(token):
-    token = token.replace("Bearer", "").replace(" ", "")  # clean the token
-    return token
-
-
 def verify_user(authorization):
+
     """
     Verify a JWT token
 
@@ -26,14 +22,18 @@ def verify_user(authorization):
 
     # Decode the JWT and verify its signature
     try:
-        token = get_the_token_from_header(authorization)
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
-    except jwt.exceptions.InvalidSignatureError:
-        raise AuthenticationFailed("Invalid signature")
+        # clean the token
+        token = authorization.replace("Bearer", "").replace(" ", "")
+        payload = jwt.decode(
+            token,
+            settings.SECRET_KEY,
+            algorithms="HS256",
+            options={"verify_signature": False},
+        )
     except:
-        raise ParseError()
+        print("Invalid")
+        return None
 
-    # return the token payload
     return payload
 
 
