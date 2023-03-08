@@ -1,4 +1,3 @@
-from django.shortcuts import render
 from rest_framework.decorators import api_view
 from .serializers import QuestionSerializer, UserSerializer, AnswerSerializer
 from rest_framework.response import Response
@@ -64,7 +63,7 @@ def questions(request):
         auth = verify_user(authorization=request.META.get("HTTP_AUTHORIZATION"))
         if auth is None:
             return Response(status=status.HTTP_401_UNAUTHORIZED)
-        
+
         data = {
             "question_text": request.data.get("question_text"),
             "author": auth.get("user_id"),

@@ -103,7 +103,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-JWT_CONF = {"TOKEN_LIFETIME_HOURS": 5}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.1/topics/i18n/
@@ -129,11 +129,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 # CORS
+#  so we don't have errors making requests from other clients
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 X_FRAME_OPTIONS = "DENY"
 
+# JWT settings
+JWT_CONF = {"TOKEN_LIFETIME_HOURS": 5}
 
-REST_FRAMEWORK = {
-    'TEST_REQUEST_DEFAULT_FORMAT': 'json'
-}
+REST_FRAMEWORK = {"TEST_REQUEST_DEFAULT_FORMAT": "json"}

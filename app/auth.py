@@ -1,7 +1,6 @@
 import jwt
 from datetime import datetime, timedelta
 from django.conf import settings
-from rest_framework.exceptions import AuthenticationFailed, ParseError
 
 
 def verify_user(authorization):

@@ -1,4 +1,3 @@
-import base64
 import json
 
 from django.contrib.auth.hashers import make_password
@@ -8,7 +7,7 @@ from rest_framework.test import APITestCase
 
 from .auth import sign_token
 from .models import Answer, Question, User
-from .serializers import AnswerSerializer, QuestionSerializer, UserSerializer
+from .serializers import AnswerSerializer, QuestionSerializer
 
 
 class UserTest(APITestCase):

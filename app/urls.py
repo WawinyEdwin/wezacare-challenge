@@ -8,5 +8,9 @@ urlpatterns = [
     path("questions/", views.questions, name="questions"),
     path("questions/<int:question_id>/", views.question_detail, name="question_detail"),
     path("questions/<int:question_id>/answers/", views.answers, name="answers"),
-    path("questions/<int:question_id>/answers/<int:answer_id>/", views.answer_detail, name="answer_detail"),
+    path(
+        "questions/<int:question_id>/answers/<int:answer_id>/",
+        views.answer_detail,
+        name="answer_detail",
+    ),
 ]
